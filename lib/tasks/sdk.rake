@@ -52,6 +52,26 @@ task 'clean_env' do
   end
 end
 
+desc 'Wipe integration'
+task 'wipe', :option do |_, args|
+  flavor = args[:option] || false
+  abort "please specify an integration to remove" if not flavor
+  check_env
+  input = ''
+  print "Are you sure you want to remove the integration (y/n)? "
+  input = STDIN.gets.chomp
+  case input.upcase
+  when "Y"
+    `rm -rf #{ENV['SDK_HOME']}/#{flavor}` if File.directory?("#{ENV['SDK_HOME']}/#{flavor}")
+    `rm -rf #{ENV['SDK_HOME']}/ci/#{flavor}.rake` if File.exist?("#{ENV['SDK_HOME']}/ci/#{flavor}.rake")
+    puts "source and CI files."
+    sh "sed -i '' \"/#{flavor}/d\" #{ENV['SDK_HOME']}/.travis.yml"
+    sh "sed -i '' \"/#{flavor}/d\" #{ENV['SDK_HOME']}/circle.yml"
+  when "N"
+    puts "aborting the task..."
+  end
+end
+
 desc 'Setup git hooks'
 task 'setup_hooks' do
   check_env
