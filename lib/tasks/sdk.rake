@@ -102,8 +102,8 @@ namespace :generate do
     sh "cp #{gem_home}/lib/config/README.md #{ENV['SDK_HOME']}/#{args[:option]}/README.md"
     sh "find #{ENV['SDK_HOME']}/#{args[:option]} -type f -exec sed -i '' \"s/skeleton/#{args[:option]}/g\" {} \\;"
     sh "find #{ENV['SDK_HOME']}/#{args[:option]} -type f -exec sed -i '' \"s/Skeleton/#{capitalized}/g\" {} \\;"
-    sh "sed -i '' \"s/skeleton/#{args[:option]}/g\" #{ENV['SDK_HOME']}/ci/#{args[:option]}.rake"
-    sh "sed -i '' \"s/Skeleton/#{capitalized}/g\" #{ENV['SDK_HOME']}/ci/#{args[:option]}.rake"
+    sh "sed -i \"s/skeleton/#{args[:option]}/g\" #{ENV['SDK_HOME']}/ci/#{args[:option]}.rake"
+    sh "sed -i \"s/Skeleton/#{capitalized}/g\" #{ENV['SDK_HOME']}/ci/#{args[:option]}.rake"
     sh "git add #{ENV['SDK_HOME']}/ci/#{args[:option]}.rake"
     sh "git add #{ENV['SDK_HOME']}/#{args[:option]}/*"
 
