@@ -65,8 +65,8 @@ task 'wipe', :option do |_, args|
     `rm -rf #{ENV['SDK_HOME']}/#{flavor}` if File.directory?("#{ENV['SDK_HOME']}/#{flavor}")
     `rm -rf #{ENV['SDK_HOME']}/ci/#{flavor}.rake` if File.exist?("#{ENV['SDK_HOME']}/ci/#{flavor}.rake")
     puts "source and CI files."
-    sh "sed -i '' \"/#{flavor}/d\" #{ENV['SDK_HOME']}/.travis.yml"
-    sh "sed -i '' \"/#{flavor}/d\" #{ENV['SDK_HOME']}/circle.yml"
+    sed("#{ENV['SDK_HOME']}/.travis.yml", '', "=#{flavor}[\ |$]", '', 'd')
+    sed("#{ENV['SDK_HOME']}/circle.yml", '', "\[#{flavor}\]", '', 'd')
   when "N"
     puts "aborting the task..."
   end
