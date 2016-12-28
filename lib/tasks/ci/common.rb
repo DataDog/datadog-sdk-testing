@@ -21,7 +21,7 @@ def sed(source, op, a, b, mods)
   if RUBY_PLATFORM.include? 'darwin'
     sh "sed -i '' \"#{cmd}/#{mods}\" #{source}"
   else
-    sh "sed -i \"s/#{cmd}/#{mods}\" #{source}"
+    sh "sed -i \"#{cmd}/#{mods}\" #{source}"
   end
 end
 
