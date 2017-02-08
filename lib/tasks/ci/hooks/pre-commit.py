@@ -1,11 +1,54 @@
 #!/usr/bin/env python
 
+import github3
+
 import fnmatch
 import os
 import sys
 
 OK = 0
 ERR = 1
+
+EXTRAS = ['DataDog/integrations-extras']
+
+
+# TODO: change this to tokens...
+def two_fa():
+    code = ''
+    while not code:
+        code = raw_input('Enter Github 2FA Code: ')
+
+    return code
+
+
+def get_extras_requirements():
+    reqs = {}
+    api = github3.login(
+        os.environ.get('GHUSER'),
+        os.environ('GHPASS'),
+        two_factor_callback=two_fa
+    )
+
+    for repo in EXTRAS:
+        _repo = repo.split('/')
+        if len(_repo) is not 2:
+            continue
+
+        org = repo.split('/')[0]
+        repository = repo.split('/')[1]
+        gh_repo = api.repository(org, repository)
+
+        reqs[repo] = {}
+        contents = gh_repo.contents('/', return_as=dict)
+        for entry, content in contents:
+            if content.type is not "dir":
+                continue
+
+            req = gh_repo.file_contents("/{}/requirements.txt".format(entry))
+            reqs[repo][entry] = req.decoded
+
+    return reqs
+
 
 def get_files(fname):
     matches = []
@@ -14,6 +57,18 @@ def get_files(fname):
             matches.append(os.path.join(root, filename))
 
     return matches
+
+
+def get_local_contents(files):
+    local_reqs = {}
+    for fname in files:
+        integration = fname.split('/')[0]
+        with open(fname) as f:
+            content = f.readlines()
+
+        local_reqs[integration] = content
+
+    return local_reqs
 
 
 def process_requirements(reqs, fname):
