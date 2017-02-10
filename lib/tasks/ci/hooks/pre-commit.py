@@ -6,13 +6,14 @@ import fnmatch
 import os
 import sys
 
-OK = 0
+
 ERR = 1
 
-EXTRAS = ['DataDog/integrations-extras']
+
+class BadGithubRepo(Exception):
+    pass
 
 
-# TODO: change this to tokens...
 def two_fa():
     code = ''
     while not code:
@@ -21,100 +22,146 @@ def two_fa():
     return code
 
 
-def get_extras_requirements():
-    reqs = {}
-    api = github3.login(
-        os.environ.get('GHUSER'),
-        os.environ('GHPASS'),
-        two_factor_callback=two_fa
-    )
+class RequirementsAnalyzer(object):
+    SPECIFIERS = ['==', '!=' '<=', '>=', '<', '>']
 
-    for repo in EXTRAS:
+    def __init__(self, remote, local, patterns=['requirements.txt']):
+        self.remote_sources = remote
+        self.local_sources = local
+        self.req_patterns = patterns
+
+    def get_repo_requirements(self, repo):
+        reqs = {}
+        if os.environ.get('GHTOKEN'):
+            api = github3.login(
+                token=os.environ.get('GHTOKEN')
+            )
+        else:
+            api = github3.login(
+                os.environ.get('GHUSER'),
+                os.environ('GHPASS'),
+                two_factor_callback=two_fa
+            )
+
         _repo = repo.split('/')
         if len(_repo) is not 2:
-            continue
+            raise BadGithubRepo
 
-        org = repo.split('/')[0]
-        repository = repo.split('/')[1]
+        org = _repo[0]
+        repository = _repo[1]
         gh_repo = api.repository(org, repository)
 
-        reqs[repo] = {}
-        contents = gh_repo.contents('/', return_as=dict)
-        for entry, content in contents:
-            if content.type is not "dir":
+        contents = gh_repo.directory_contents('/', return_as=dict)
+        files = {}
+        for entry, content in contents.iteritems():
+            if content.type != "dir":
+                files[content.name] = content
                 continue
 
             req = gh_repo.file_contents("/{}/requirements.txt".format(entry))
-            reqs[repo][entry] = req.decoded
+            reqs[entry] = req.decoded
 
-    return reqs
+        fmatches = []
+        for pattern in self.req_patterns:
+            fmatches.extend(fnmatch.filter(files.keys(), pattern))
+
+        for match in fmatches:
+            req = gh_repo.file_contents(files[match].path)
+            reqs[match] = req.decoded
+
+        return reqs
+
+    def get_local_files(self):
+        matches = []
+        for src in self.local_sources:
+            for pattern in self.req_patterns:
+                for root, dirnames, filenames in os.walk(src):
+                    for filename in fnmatch.filter(filenames, pattern):
+                        matches.append(os.path.join(root, filename))
+
+        return matches
+
+    def get_local_contents(self, files):
+        local_reqs = {}
+        for fname in files:
+            integration = fname.split('/')[0]
+            with open(fname) as f:
+                content = f.readlines()
+
+            local_reqs[integration] = content
+
+        return local_reqs
+
+    def get_all_requirements(self):
+        reqs = {}
+        for repo in self.remote_sources:
+            try:
+                requirements = self.get_repo_requirements(repo)
+                if requirements:
+                    reqs[repo] = requirements
+            except BadGithubRepo:
+                pass
+
+        for local in self.local_sources:
+            requirements = self.get_local_contents(self.get_local_files())
+            reqs[local] = requirements
+
+        return reqs
+
+    def process_requirements(self, sources):
+        reqs = {}
+
+        for source, requirements in sources.iteritems():
+            for integration, content in requirements.iteritems():
+                print "processing... {}/{}".format(source, integration)
+                mycontent = content.splitlines()
+
+                for line in mycontent:
+                    line = "".join(line.split())
+                    for specifier in self.SPECIFIERS:
+                        idx = line.find(specifier)
+                        if idx < 0:
+                            continue
+
+                        req = line[:idx]
+                        specifier = line[idx:]
+
+                        if req in reqs and reqs[req][0] != specifier:
+                            # version mismatch
+                            print "There's a version mismatch with {req} " \
+                                " {spec} and {prev_spec} defined in {src} " \
+                                "@ {repo}.".format(
+                                    req=req,
+                                    spec=specifier,
+                                    prev_spec=reqs[req][0],
+                                    src=reqs[req][1],
+                                    repo=reqs[req][2]
+                                )
+                            break
+                        elif req not in reqs:
+                            reqs[req] = (specifier, integration, source)
+                            break
+
+        return reqs
 
 
-def get_files(fname):
-    matches = []
-    for root, dirnames, filenames in os.walk('.'):
-        for filename in fnmatch.filter(filenames, fname):
-            matches.append(os.path.join(root, filename))
-
-    return matches
+REPOS = ['DataDog/integrations-extras',
+         'DataDog/integrations-core',
+         'DataDog/dd-agent']
 
 
-def get_local_contents(files):
-    local_reqs = {}
-    for fname in files:
-        integration = fname.split('/')[0]
-        with open(fname) as f:
-            content = f.readlines()
+analyzer = RequirementsAnalyzer(
+    remote=REPOS, local=[], patterns=['requirements*.txt'])
 
-        local_reqs[integration] = content
+reqs = analyzer.process_requirements(analyzer.get_all_requirements())
 
-    return local_reqs
+# print "No requirement version conflicts found. Looking good... ;)"
+# for requirement, spec in reqs.iteritems():
+#     print "{req}{spec} first found in {fname} @ {source}".format(
+#         req=requirement,
+#         spec=spec[0],
+#         fname=spec[1],
+#         source=spec[2]
+#     )
 
-
-def process_requirements(reqs, fname):
-    SPECIFIERS = ['==', '!=' '<=', '>=', '<', '>']
-
-    print "processing... {}".format(fname)
-    with open(fname) as f:
-        content = f.readlines()
-
-    for line in content:
-        line = "".join(line.split())
-        for specifier in SPECIFIERS:
-            idx = line.find(specifier)
-            if idx < 0:
-                continue
-
-            req = line[:idx]
-            specifier = line[idx:]
-
-            if req in reqs and reqs[req][0] != specifier:
-                # version mismatch
-                print "There's a version mismatch with {req} " \
-                    " {spec} and {prev_spec} defined in {src}.".format(
-                        req=req,
-                        spec=specifier,
-                        prev_spec=reqs[req][0],
-                        src=reqs[req][1]
-                    )
-                sys.exit(ERR)
-            elif req not in reqs:
-                reqs[req] = (specifier, fname)
-                break
-
-
-requirements = {}
-files = get_files('requirements.txt')
-
-for f in files:
-    process_requirements(requirements, f)
-
-print "No requirement version conflicts found. Looking good... ;)"
-for req, spec in requirements.iteritems():
-    print "{req}{spec} first found in {fname}".format(
-        req=req,
-        spec=spec[0],
-        fname=spec[1]
-    )
-
-sys.exit(OK)
+sys.exit(0)
