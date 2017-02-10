@@ -94,11 +94,10 @@ class RequirementsAnalyzer(object):
     def get_local_contents(self, files):
         local_reqs = {}
         for fname in files:
-            integration = fname.split('/')[0]
             with open(fname) as f:
-                content = f.readlines()
+                content = f.read()
 
-            local_reqs[integration] = content
+            local_reqs[fname] = content
 
         return local_reqs
 
@@ -158,23 +157,35 @@ class RequirementsAnalyzer(object):
         return reqs
 
 
-REPOS = ['DataDog/integrations-extras',
-         'DataDog/integrations-core',
-         'DataDog/dd-agent']
+def main(args):
+    remote = local = []
+    if not len(args):
+        remote = [repo.strip() for repo in os.environ.get('REQ_REMOTES', '').split(',')]
+        local = [repo.strip() for repo in os.environ.get('REQ_LOCALS', '').split(',')]
+    elif len(args) == 1:
+        local = [repo.strip() for repo in args[0].split(',')]
+    elif len(args) == 2:
+        local = [repo.strip() for repo in args[0].split(',')]
+        remote = [repo.strip() for repo in args[1]]
+    else:
+        local = ['.']
 
+    analyzer = RequirementsAnalyzer(
+        remote=remote, local=local, patterns=['requirements*.txt'])
 
-analyzer = RequirementsAnalyzer(
-    remote=REPOS, local=[], patterns=['requirements*.txt'])
+    analyzer.process_requirements(analyzer.get_all_requirements())
+#   reqs = analyzer.process_requirements(analyzer.get_all_requirements())
+#   print "No requirement version conflicts found. Looking good... ;)"
+#   for requirement, spec in reqs.iteritems():
+#       print "{req}{spec} first found in {fname} @ {source}".format(
+#           req=requirement,
+#           spec=spec[0],
+#           fname=spec[1],
+#           source=spec[2]
+#       )
 
-reqs = analyzer.process_requirements(analyzer.get_all_requirements())
+if __name__ == "__main__":
+    main(sys.argv[1:])
 
-# print "No requirement version conflicts found. Looking good... ;)"
-# for requirement, spec in reqs.iteritems():
-#     print "{req}{spec} first found in {fname} @ {source}".format(
-#         req=requirement,
-#         spec=spec[0],
-#         fname=spec[1],
-#         source=spec[2]
-#     )
 
 sys.exit(0)
