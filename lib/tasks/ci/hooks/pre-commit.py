@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
-import github3
-
 import fnmatch
 import os
 import sys
+
+try:
+    import github3
+except ImportError:
+    github3 = None
 
 
 ERR = 1
@@ -35,16 +38,17 @@ class RequirementsAnalyzer(object):
         self.local_sources = local
         self.req_patterns = patterns
 
-        if os.environ.get(ENV_TOKEN):
-            self.api = github3.login(
-                token=os.environ.get(ENV_TOKEN)
-            )
-        elif os.environ.get(ENV_USER) and os.environ.get(ENV_PASS):
-            self.api = github3.login(
-                os.environ.get(ENV_USER),
-                os.environ(ENV_PASS),
-                two_factor_callback=two_fa
-            )
+        if github3:
+            if os.environ.get(ENV_TOKEN):
+                self.api = github3.login(
+                    token=os.environ.get(ENV_TOKEN)
+                )
+            elif os.environ.get(ENV_USER) and os.environ.get(ENV_PASS):
+                self.api = github3.login(
+                    os.environ.get(ENV_USER),
+                    os.environ(ENV_PASS),
+                    two_factor_callback=two_fa
+                )
 
     def get_repo_requirements(self, repo):
         reqs = {}
