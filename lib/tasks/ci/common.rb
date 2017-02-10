@@ -274,11 +274,9 @@ def can_skip?
   git_output.each_line do |filename|
     filename.strip!
     puts filename
-    if filename.split('/').length > 1
-      check_name = filename.split('/')[0]
-    else
-      return false, []
-    end
+    return false, [] if filename.split('/').length < 2
+
+    check_name = filename.split('/')[0]
     modified_checks << check_name unless modified_checks.include? check_name
   end
   [true, modified_checks]
