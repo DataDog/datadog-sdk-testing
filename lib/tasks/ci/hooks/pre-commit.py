@@ -121,6 +121,7 @@ class RequirementsAnalyzer(object):
         return reqs
 
     def process_requirements(self, sources):
+        err = 0
         reqs = {}
 
         for source, requirements in sources.iteritems():
@@ -149,12 +150,13 @@ class RequirementsAnalyzer(object):
                                     src=reqs[req][1],
                                     repo=reqs[req][2]
                                 )
+                            err = ERR
                             break
                         elif req not in reqs:
                             reqs[req] = (specifier, integration, source)
                             break
 
-        return reqs
+        return err, reqs
 
 
 def main(args):
@@ -173,19 +175,18 @@ def main(args):
     analyzer = RequirementsAnalyzer(
         remote=remote, local=local, patterns=['requirements*.txt'])
 
-    analyzer.process_requirements(analyzer.get_all_requirements())
-#   reqs = analyzer.process_requirements(analyzer.get_all_requirements())
-#   print "No requirement version conflicts found. Looking good... ;)"
-#   for requirement, spec in reqs.iteritems():
-#       print "{req}{spec} first found in {fname} @ {source}".format(
-#           req=requirement,
-#           spec=spec[0],
-#           fname=spec[1],
-#           source=spec[2]
-#       )
+    err, reqs = analyzer.process_requirements(analyzer.get_all_requirements())
+    if not err:
+        print "No requirement version conflicts found. Looking good... ;)"
+        for requirement, spec in reqs.iteritems():
+            print "{req}{spec} first found in {fname} @ {source}".format(
+                req=requirement,
+                spec=spec[0],
+                fname=spec[1],
+                source=spec[2]
+            )
+
+    sys.exit(err)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
-sys.exit(0)
