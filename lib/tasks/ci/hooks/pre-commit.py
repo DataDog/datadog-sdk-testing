@@ -9,6 +9,10 @@ import sys
 
 ERR = 1
 
+ENV_TOKEN = 'GHTOKEN'
+ENV_USER = 'GHUSER'
+ENV_PASS = 'GHPASS'
+
 
 class BadGithubRepo(Exception):
     pass
@@ -26,22 +30,24 @@ class RequirementsAnalyzer(object):
     SPECIFIERS = ['==', '!=' '<=', '>=', '<', '>']
 
     def __init__(self, remote, local, patterns=['requirements.txt']):
+        self.api = None
         self.remote_sources = remote
         self.local_sources = local
         self.req_patterns = patterns
 
-    def get_repo_requirements(self, repo):
-        reqs = {}
-        if os.environ.get('GHTOKEN'):
-            api = github3.login(
-                token=os.environ.get('GHTOKEN')
+        if os.environ.get(ENV_TOKEN):
+            self.api = github3.login(
+                token=os.environ.get(ENV_TOKEN)
             )
-        else:
-            api = github3.login(
-                os.environ.get('GHUSER'),
-                os.environ('GHPASS'),
+        elif os.environ.get(ENV_USER) and os.environ.get(ENV_PASS):
+            self.api = github3.login(
+                os.environ.get(ENV_USER),
+                os.environ(ENV_PASS),
                 two_factor_callback=two_fa
             )
+
+    def get_repo_requirements(self, repo):
+        reqs = {}
 
         _repo = repo.split('/')
         if len(_repo) is not 2:
@@ -49,7 +55,7 @@ class RequirementsAnalyzer(object):
 
         org = _repo[0]
         repository = _repo[1]
-        gh_repo = api.repository(org, repository)
+        gh_repo = self.api.repository(org, repository)
 
         contents = gh_repo.directory_contents('/', return_as=dict)
         files = {}
@@ -94,13 +100,16 @@ class RequirementsAnalyzer(object):
 
     def get_all_requirements(self):
         reqs = {}
-        for repo in self.remote_sources:
-            try:
-                requirements = self.get_repo_requirements(repo)
-                if requirements:
-                    reqs[repo] = requirements
-            except BadGithubRepo:
-                pass
+        if self.api:
+            for repo in self.remote_sources:
+                try:
+                    requirements = self.get_repo_requirements(repo)
+                    if requirements:
+                        reqs[repo] = requirements
+                except BadGithubRepo:
+                    pass
+        else:
+            print 'No Github API set (missing creds?) cant crawl remotes.'
 
         for local in self.local_sources:
             requirements = self.get_local_contents(self.get_local_files())
