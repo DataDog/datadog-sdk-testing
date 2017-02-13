@@ -12,9 +12,9 @@ except ImportError:
 
 ERR = 1
 
-ENV_TOKEN = 'GHTOKEN'
-ENV_USER = 'GHUSER'
-ENV_PASS = 'GHPASS'
+ENV_TOKEN = 'GITHUB_TOKEN'
+ENV_USER = 'GITHUB_USER'
+ENV_PASS = 'GITHUB_PASS'
 
 
 class BadGithubRepo(Exception):
@@ -32,11 +32,12 @@ def two_fa():
 class RequirementsAnalyzer(object):
     SPECIFIERS = ['==', '!=' '<=', '>=', '<', '>']
 
-    def __init__(self, remote, local, patterns=['requirements.txt']):
+    def __init__(self, remote, local, patterns=['requirements.txt'], verbose=False):
         self.api = None
         self.remote_sources = remote
         self.local_sources = local
         self.req_patterns = patterns
+        self.verbose = verbose
 
         if github3:
             if os.environ.get(ENV_TOKEN):
@@ -110,7 +111,7 @@ class RequirementsAnalyzer(object):
                     if requirements:
                         reqs[repo] = requirements
                 except BadGithubRepo:
-                    pass
+                    print 'Unable to get repo requirements for {} - skipping.'.format(repo)
         else:
             print 'No Github API set (missing creds?) cant crawl remotes.'
 
@@ -126,7 +127,8 @@ class RequirementsAnalyzer(object):
 
         for source, requirements in sources.iteritems():
             for integration, content in requirements.iteritems():
-                print "processing... {}/{}".format(source, integration)
+                if self.verbose:
+                    print "processing... {}/{}".format(source, integration)
                 mycontent = content.splitlines()
 
                 for line in mycontent:
@@ -159,8 +161,12 @@ class RequirementsAnalyzer(object):
         return err, reqs
 
 
+def str2bool(v):
+    return v.lower() in ("yes", "true", "t", "1")
+
 def main(args):
     remote = local = []
+    verbose = str2bool(os.environ.get('VERBOSE', 'false'))
     if not len(args):
         remote = [repo.strip() for repo in os.environ.get('REQ_REMOTES', '').split(',')]
         local = [repo.strip() for repo in os.environ.get('REQ_LOCALS', '').split(',')]
@@ -168,23 +174,24 @@ def main(args):
         local = [repo.strip() for repo in args[0].split(',')]
     elif len(args) == 2:
         local = [repo.strip() for repo in args[0].split(',')]
-        remote = [repo.strip() for repo in args[1]]
+        remote = [repo.strip() for repo in args[1].split(',')]
     else:
         local = ['.']
 
     analyzer = RequirementsAnalyzer(
-        remote=remote, local=local, patterns=['requirements*.txt'])
+        remote=remote, local=local, patterns=['requirements*.txt'], verbose=verbose)
 
     err, reqs = analyzer.process_requirements(analyzer.get_all_requirements())
     if not err:
         print "No requirement version conflicts found. Looking good... ;)"
-        for requirement, spec in reqs.iteritems():
-            print "{req}{spec} first found in {fname} @ {source}".format(
-                req=requirement,
-                spec=spec[0],
-                fname=spec[1],
-                source=spec[2]
-            )
+        if verbose:
+            for requirement, spec in reqs.iteritems():
+                print "{req}{spec} first found in {fname} @ {source}".format(
+                    req=requirement,
+                    spec=spec[0],
+                    fname=spec[1],
+                    source=spec[2]
+                )
 
     sys.exit(err)
 
