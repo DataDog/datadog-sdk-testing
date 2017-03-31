@@ -266,6 +266,16 @@ def can_skip?
   [true, modified_checks]
 end
 
+def run_rake_task(task, flavor, common_task=nil)
+  task_name = "ci:#{flavor}:#{task}"
+  if Rake::Task.task_defined?(task_name)
+    Rake::Task[task_name].invoke
+  else
+    task = if common_task.nil? then task else common_task end
+    Rake::Task["ci:common:#{task}"].invoke(flavor)
+  end
+end
+
 namespace :ci do
   namespace :common do
     task :before_install do |t|
@@ -316,6 +326,11 @@ namespace :ci do
       t.reenable
     end
 
+    task :test, [:flavor] => :script do |t, attr|
+      flavor = attr[:flavor]
+      Rake::Task['ci:common:run_tests'].invoke([flavor])
+    end
+
     task :before_cache do |t|
       section('BEFORE_CACHE')
       t.reenable
@@ -324,6 +339,31 @@ namespace :ci do
     task :cleanup do |t|
       section('CLEANUP')
       t.reenable
+    end
+
+    task :execute, [:flavor] do |t, attr|
+      exception = nil
+      flavor = attr[:flavor]
+      begin
+        %w(before_install install before_script).each do |task|
+          run_rake_task(task, flavor)
+        end
+        if ENV['SKIP_TEST']
+          puts 'Skipping tests'.yellow
+        else
+          run_rake_task('script', flavor, 'test')
+        end
+        run_rake_task('before_cache', flavor)
+      rescue => e
+        exception = e
+        puts "Failed task: #{e.class} #{e.message}".red
+      end
+      if ENV['SKIP_CLEANUP']
+        puts 'Skipping cleanup, disposable environments are great'.yellow
+      else
+        run_rake_task('cleanup', flavor)
+      end
+      raise exception if exception
     end
 
     task :run_tests, [:flavor] do |t, attr|

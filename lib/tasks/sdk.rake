@@ -158,7 +158,12 @@ namespace :ci do
         puts "skipping #{flavor} tests, not affected by the change".yellow
         next
       end
-      Rake::Task["ci:#{f}:execute"].invoke
+      task_name = "ci:#{f}:execute"
+      if Rake::Task.task_defined?(task_name)
+        Rake::Task[task_name].invoke
+      else
+        Rake::Task['ci:common:execute'].invoke(f)
+      end
     end
   end
 end
