@@ -8,7 +8,6 @@ namespace :ci do
     task before_install: ['ci:common:before_install']
 
     task :coverage do
-      check_env
       testable, untested = integration_tests(File.dirname(__FILE__))
       total_checks = (untested + testable).length
       unless untested.empty?
@@ -27,7 +26,6 @@ namespace :ci do
       if ENV['SKIP_LINT']
         puts 'Skipping lint'.yellow
       else
-        check_env
         sh %(flake8 #{ENV['SDK_HOME']})
         if RUBY_PLATFORM.include? 'darwin'
           sh %(find #{ENV['SDK_HOME']} -name '*.py' -not\
@@ -42,13 +40,11 @@ namespace :ci do
     end
 
     task :requirements do
-      check_env
       gem_home = Bundler.rubygems.find_name('datadog-sdk-testing').first.full_gem_path
       sh "#{gem_home}/lib/tasks/ci/hooks/pre-commit.py"
     end
 
     task script: ['ci:common:script', :coverage, :lint] do
-      check_env
       Rake::Task['ci:common:run_tests'].invoke(['default'])
     end
 
