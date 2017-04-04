@@ -3,7 +3,6 @@ require 'socket'
 require 'time'
 require 'timeout'
 
-
 # helper class to wait for TCP/HTTP services to boot
 class Wait
   DEFAULT_TIMEOUT = 10

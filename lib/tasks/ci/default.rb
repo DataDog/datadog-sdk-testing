@@ -53,8 +53,8 @@ namespace :ci do
     task :execute do
       exception = nil
       begin
-        %w(before_install install before_script
-           script).each do |t|
+        %w[before_install install before_script
+           script].each do |t|
           Rake::Task["#{flavor.scope.path}:#{t}"].invoke
         end
       rescue => e

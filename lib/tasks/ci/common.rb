@@ -102,7 +102,7 @@ namespace :ci do
       exception = nil
       flavor = attr[:flavor]
       begin
-        %w(before_install install before_script).each do |task|
+        %w[before_install install before_script].each do |task|
           run_rake_task(task, flavor)
         end
         if ENV['SKIP_TEST']

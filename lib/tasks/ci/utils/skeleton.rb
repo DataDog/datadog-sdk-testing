@@ -1,6 +1,5 @@
 require 'securerandom'
 
-
 def sed(source, op, a, b, mods)
   cmd = "#{op}/#{a}"
   cmd = "#{cmd}/#{b}" unless b.nil? || b.empty?
