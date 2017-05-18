@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
                      'lib/config/CHANGELOG.md',
                      'lib/config/requirements.txt',
                      'lib/config/test_skeleton.py',
+                     'lib/utils/bash_utils.sh',
                      'README.md',
                      'LICENSE']
   s.homepage      = 'http://rubygems.org/gems/datadog-sdk-testing'
