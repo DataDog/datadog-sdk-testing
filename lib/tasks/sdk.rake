@@ -39,6 +39,14 @@ task 'setup_env' do
   FileUtils.rm Dir.glob('setuptools*.zip')
 end
 
+desc 'Grab latest external dd-agent libraries'
+task 'setup_agent_libs' do
+  check_env
+  `cd #{ENV['SDK_HOME']}/embedded/dd-agent/ && rake -T | grep setup_libs > /dev/null 2>&1`
+  next if $?.exitstatus != 0
+  `cd #{ENV['SDK_HOME']}/embedded/dd-agent/" && rake setup_libs`
+end
+
 desc 'Clean development environment for the SDK (remove!)'
 task 'clean_env' do
   check_env
