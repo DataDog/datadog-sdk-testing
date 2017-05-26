@@ -5,6 +5,7 @@
 require 'rake/clean'
 require 'rubocop/rake_task'
 require 'bundler'
+require 'english'
 
 # Flavored Travis CI jobs
 require 'ci/default'
@@ -42,9 +43,11 @@ end
 desc 'Grab latest external dd-agent libraries'
 task 'setup_agent_libs' do
   check_env
-  `cd #{ENV['SDK_HOME']}/embedded/dd-agent/ && rake -T | grep setup_libs > /dev/null 2>&1`
-  next if $?.exitstatus != 0
-  `cd #{ENV['SDK_HOME']}/embedded/dd-agent/" && rake setup_libs`
+  agent_dir = in_ci_env ? "#{ENV['HOME']}/dd-agent/" : "#{ENV['SDK_HOME']}/embedded/dd-agent/"
+
+  `cd  #{agent_dir} && rake -T | grep setup_libs > /dev/null 2>&1`
+  next if $CHILD_STATUS.exitstatus != 0
+  `cd #{agent_dir}" && rake setup_libs`
 end
 
 desc 'Clean development environment for the SDK (remove!)'
