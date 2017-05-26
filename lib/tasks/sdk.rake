@@ -47,7 +47,7 @@ task 'setup_agent_libs' do
 
   `cd  #{agent_dir} && rake -T | grep setup_libs > /dev/null 2>&1`
   next if $CHILD_STATUS.exitstatus != 0
-  `cd #{agent_dir}" && rake setup_libs`
+  `cd #{agent_dir} && rake setup_libs`
 end
 
 desc 'Clean development environment for the SDK (remove!)'
