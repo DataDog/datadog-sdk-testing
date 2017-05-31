@@ -46,11 +46,11 @@ task 'setup_agent_libs' do
   agent_dir = in_ci_env ? "#{ENV['HOME']}/dd-agent/" : "#{ENV['SDK_HOME']}/embedded/dd-agent/"
 
   Dir.chdir(agent_dir) do
-      `bundle install`
-      `bundle exec rake -T | grep setup_libs > /dev/null 2>&1`
-      raise "Rake task 'setup_libs' not found!" if  $CHILD_STATUS.exitstatus != 0
-      # Use `sh` so we don't ingest standard output and error
-      sh "bundle exec rake setup_libs"
+    `bundle install`
+    `bundle exec rake -T | grep setup_libs > /dev/null 2>&1`
+    raise "Rake task 'setup_libs' not found!" if $CHILD_STATUS.exitstatus != 0
+    # Use `sh` so we don't ingest standard output and error
+    sh 'bundle exec rake setup_libs'
   end
 end
 
