@@ -13,7 +13,7 @@ def check_env
 end
 
 def bin_in_path?(binary)
-  ENV['PATH'].split(':').collect {|d| Dir.entries d if Dir.exists? d}.flatten.include? binary
+  ENV['PATH'].split(':').collect { |d| Dir.entries d if Dir.exist? d }.flatten.include? binary
 end
 
 def in_ci_env
