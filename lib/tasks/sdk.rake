@@ -40,7 +40,7 @@ task 'setup_env' do
   # This sometimes causes check setup to fail
   FileUtils.rm Dir.glob('setuptools*.zip')
   # Download JMX Fetch, too
-  Rake::Task['setup_libs'].invoke
+  Rake::Task['setup_agent_libs'].invoke
 end
 
 desc 'Grab latest external dd-agent libraries'
