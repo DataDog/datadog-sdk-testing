@@ -38,6 +38,7 @@ namespace :ci do
               \\( -path '*.cache*' -or -path '*embedded*' -or -path '*dd-agent*' -or -path '*venv*' -or -path '*.git*' -or -path '*vendor*' \\)\
                  | xargs -r -n 80 -P 8 pylint --rcfile=#{ENV['SDK_HOME']}/.pylintrc)
         end
+        check_outdated_deps
       end
     end
 

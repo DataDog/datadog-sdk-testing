@@ -274,6 +274,49 @@ def can_skip?
   [true, modified_checks]
 end
 
+def outdated_packages
+  pip_command = use_venv ? 'venv/bin/pip' : 'pip'
+  outdated_array = []
+  outdated_output = `#{pip_command} list --outdated --format=columns`
+  outdated_packages = `echo "#{outdated_output}" | awk '{print $1}' | grep -v Package | grep -v '\-'`.split("\n")
+  outdated_versions = `echo "#{outdated_output}" | awk '{print $2}' | grep -v Version | grep -v '\-'`.split("\n")
+  outdated_latest = `echo "#{outdated_output}" | awk '{print $3}' | grep -v Latest | grep -v '\-'`.split("\n")
+  outdated_packages.each_with_index do |pkg, i|
+    dep = {
+      package: pkg,
+      version: outdated_versions[i],
+      latest: outdated_latest[i]
+    }
+    outdated_array.push(dep)
+  end
+  outdated_array
+end
+
+def check_outdated_deps
+  outdated = []
+  outdated_array = outdated_packages
+  outdated_array.each do |dep|
+    outdated += outdated? dep
+  end
+  outdated == '' && return
+  print "There are outdated packages: \n"
+  outdated.each do |dep|
+    print dep
+  end
+  raise 'Please upgrade these packages'
+end
+
+def outdated?(dep)
+  outdated = []
+  sdk_dir = ENV['SDK_HOME'] || Dir.pwd
+  req_files = Dir.glob("#{sdk_dir}/*/requirements.txt")
+  req_files.each do |f|
+    File.read(f).include?(dep[:package]) || next
+    outdated << "#{dep[:package]} in #{f} with version #{dep[:version]} is outdated. Latest is #{dep[:latest]} \n"
+  end
+  outdated
+end
+
 namespace :ci do
   namespace :common do
     task :before_install do |t|
