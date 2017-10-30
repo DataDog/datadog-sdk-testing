@@ -1,5 +1,14 @@
 # CHANGELOG
 
+0.8.0/ 2017.10.30
+=================
+
+### Changes
+
+* [improvement] Add support for alternative integration layout. See [#68][]
+* [improvement] Bump Rake, Httparty and Rubocop to newer version. See [#68][]
+* [deprecate] Deprecate old 2.0 ruby. See [#68][]
+
 0.7.4/ 2017.07.12
 =================
 
@@ -302,5 +311,6 @@
 [#64]: https://github.com/DataDog/datadog-sdk-testing/issues/64
 [#66]: https://github.com/DataDog/datadog-sdk-testing/issues/66
 [#67]: https://github.com/DataDog/datadog-sdk-testing/issues/67
+[#68]: https://github.com/DataDog/datadog-sdk-testing/issues/68
 [@ksauzz]: https://github.com/ksauzz
 [@lastmikoi]: https://github.com/lastmikoi
