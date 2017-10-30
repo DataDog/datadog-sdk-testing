@@ -49,7 +49,7 @@ namespace :ci do
           puts 'Skipping tests'.yellow
         end
         Rake::Task["#{flavor.scope.path}:before_cache"].invoke
-      rescue => e
+      rescue StandardError => e
         exception = e
         puts "Failed task: #{e.class} #{e.message}".red
       end

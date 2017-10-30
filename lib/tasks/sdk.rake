@@ -1,5 +1,4 @@
 #!/usr/bin/env rake
-# encoding: utf-8
 
 # 3p
 require 'rake/clean'
@@ -11,6 +10,10 @@ require 'English'
 require 'ci/default'
 
 Dir.glob("#{ENV['SDK_HOME']}/*/ci/").each do |f|
+  Rake.add_rakelib f
+end
+
+Dir.glob("#{ENV['SDK_HOME']}/*/test/ci/").each do |f|
   Rake.add_rakelib f
 end
 

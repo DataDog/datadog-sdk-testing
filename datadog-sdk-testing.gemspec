@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'datadog-sdk-testing'
-  s.version       = '0.7.4'
+  s.version       = '0.8.0'
   s.summary       = 'Datadog Integration SDK testing/scaffolding facilities.'
   s.description   = 'Datadog Integration SDK testing/scaffolding gem'
   s.authors       = ['Jaime Fullaondo', 'Greg Meyer', 'Quentin Madec', 'Hippolyte Henry']
@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.homepage      = 'http://rubygems.org/gems/datadog-sdk-testing'
   s.license       = 'MIT'
   s.add_runtime_dependency 'colorize', '~> 0.8'
-  s.add_runtime_dependency 'httparty', '~> 0.14'
-  s.add_runtime_dependency 'rake', '~> 11.0'
-  s.add_runtime_dependency 'rubocop', '~> 0.38'
+  s.add_runtime_dependency 'httparty', '~> 0.15'
+  s.add_runtime_dependency 'rake', '~> 12.0'
+  s.add_runtime_dependency 'rubocop', '~> 0.51'
 end
