@@ -1,5 +1,4 @@
 #!/usr/bin/env rake
-# encoding: utf-8
 
 # 3p
 require 'rake/clean'

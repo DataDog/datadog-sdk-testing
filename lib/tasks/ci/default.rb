@@ -79,7 +79,7 @@ namespace :ci do
         %w[before_install install before_script script].each do |t|
           Rake::Task["#{flavor.scope.path}:#{t}"].invoke
         end
-      rescue => e
+      rescue StandardError => e
         exception = e
         puts "Failed task: #{e.class} #{e.message}".red
       end
