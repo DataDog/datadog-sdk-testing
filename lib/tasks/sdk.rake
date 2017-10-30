@@ -14,6 +14,10 @@ Dir.glob("#{ENV['SDK_HOME']}/*/ci/").each do |f|
   Rake.add_rakelib f
 end
 
+Dir.glob("#{ENV['SDK_HOME']}/*/test/ci/").each do |f|
+  Rake.add_rakelib f
+end
+
 CLOBBER.include '**/*.pyc'
 
 desc 'Setup a development environment for the SDK'
