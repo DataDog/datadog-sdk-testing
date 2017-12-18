@@ -7,6 +7,11 @@
   "short_description": "skeleton description.",
   "guid": "guid_replaceme",
   "support": "contrib",
+  "type":"check",
+  "doc_link": "link/to/the/dedicated/documentation/page",
   "supported_os": ["linux","mac_os","windows"],
-  "version": "0.1.0"
+  "categories":["list of categories","a complete list can be found on our documentation"],
+  "version": "0.1.0",
+  "is_public": true,
+  "has_logo": true
 }
