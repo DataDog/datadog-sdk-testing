@@ -1,5 +1,12 @@
 # CHANGELOG
 
+0.8.2/ 2017.12.26
+=================
+
+### Changes
+
+* [improvement] Remove linebreak text, anything to the right of it. See [#72][]
+
 0.8.1/ 2017.12.26
 =================
 
@@ -320,5 +327,6 @@
 [#67]: https://github.com/DataDog/datadog-sdk-testing/issues/67
 [#68]: https://github.com/DataDog/datadog-sdk-testing/issues/68
 [#71]: https://github.com/DataDog/datadog-sdk-testing/issues/71
+[#71]: https://github.com/DataDog/datadog-sdk-testing/issues/72
 [@ksauzz]: https://github.com/ksauzz
 [@lastmikoi]: https://github.com/lastmikoi
