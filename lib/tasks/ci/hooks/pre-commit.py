@@ -32,6 +32,7 @@ def two_fa():
 class RequirementsAnalyzer(object):
     SPECIFIERS = ['==', '!=' '<=', '>=', '<', '>']
     COMMENT = '#'
+    HASH_SWITCH = '--hash'
 
     def __init__(self, remote, local, patterns=['requirements.txt'],
                  ignorable=[], verbose=False):
@@ -155,6 +156,13 @@ class RequirementsAnalyzer(object):
                 mycontent = content.splitlines()
 
                 for line in mycontent:
+                    # remove any hash reference
+                    part = line.partition(self.HASH_SWITCH)
+                    if part[1]:
+                        line = part[0].strip()
+                        if not line:
+                            continue
+
                     line = "".join(line.split())
                     comment_idx = line.find(self.COMMENT)
                     if comment_idx >= 0:
