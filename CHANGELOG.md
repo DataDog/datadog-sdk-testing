@@ -1,5 +1,12 @@
 # CHANGELOG
 
+0.8.1/ 2017.12.26
+=================
+
+### Changes
+
+* [improvement] Add support for hashes in requirements files. See [#71][]
+
 0.8.0/ 2017.10.30
 =================
 
@@ -312,5 +319,6 @@
 [#66]: https://github.com/DataDog/datadog-sdk-testing/issues/66
 [#67]: https://github.com/DataDog/datadog-sdk-testing/issues/67
 [#68]: https://github.com/DataDog/datadog-sdk-testing/issues/68
+[#71]: https://github.com/DataDog/datadog-sdk-testing/issues/71
 [@ksauzz]: https://github.com/ksauzz
 [@lastmikoi]: https://github.com/lastmikoi
