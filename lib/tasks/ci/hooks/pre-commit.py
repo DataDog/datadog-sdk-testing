@@ -33,6 +33,7 @@ class RequirementsAnalyzer(object):
     SPECIFIERS = ['==', '!=' '<=', '>=', '<', '>']
     COMMENT = '#'
     HASH_SWITCH = '--hash'
+    LINEBREAK = '\\'
 
     def __init__(self, remote, local, patterns=['requirements.txt'],
                  ignorable=[], verbose=False):
@@ -162,6 +163,11 @@ class RequirementsAnalyzer(object):
                         line = part[0].strip()
                         if not line:
                             continue
+
+                    # remove any "linebreak"
+                    break_idx = line.find(self.LINEBREAK)
+                    if break_idx >= 0:
+                        line = line[:break_idx]
 
                     line = "".join(line.split())
                     comment_idx = line.find(self.COMMENT)
