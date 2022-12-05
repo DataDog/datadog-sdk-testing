@@ -23,6 +23,12 @@ Gem::Specification.new do |s|
                      'README.md',
                      'LICENSE']
   s.homepage      = 'http://rubygems.org/gems/datadog-sdk-testing'
+  s.metadata      = {
+    'bug_tracker_uri'   => 'https://github.com/DataDog/datadog-sdk-testing/issues',
+    'changelog_uri'     => 'https://github.com/DataDog/datadog-sdk-testing/blob/master/CHANGELOG.md',
+    'documentation_uri' => 'https://github.com/DataDog/datadog-sdk-testing/blob/master/README.md',
+    'source_code_uri'   => 'https://github.com/DataDog/datadog-sdk-testing'
+  }
   s.license       = 'MIT'
   s.add_runtime_dependency 'colorize', '~> 0.8'
   s.add_runtime_dependency 'httparty', '~> 0.15'
